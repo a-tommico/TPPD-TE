@@ -28,7 +28,7 @@ h2 = state1.enthalpy + w_pump_actual
 state2 = fluid.with_state(Input.pressure(p_high), Input.enthalpy(h2))
 
 # State 3 (Turbine Inlet): Saturated Vapor at P = 10 bar
-state3 = fluid.with_state(Input.pressure(p_high), Input.quality(1))
+state3 = fluid.with_state(Input.pressure(p_high), Input.quality(100))
 
 # State 4 (Turbine Outlet): Expansion to P_cond
 turb_eff = 0.85
@@ -109,12 +109,16 @@ for T in T_range:
 plt.plot(s_liq, T_liq_plot, 'k-', linewidth=1.5, label='Saturated Liquid (Q=0)')
 plt.plot(s_vap, T_vap_plot, 'k--', linewidth=1.5, label='Saturated Vapor (Q=1)')
 
-cycle_states = [state1, state2, state2_prime, state3, state4, state5, state1]
+# Add saturation points to the plot for clarity
+state_sat_liq = fluid.with_state(Input.pressure(p_high), Input.quality(0))
+state_sat_vap = fluid.with_state(Input.pressure(p_cond), Input.quality(100))
+
+cycle_states = [state1, state2, state2_prime, state_sat_liq, state3, state4, state5, state_sat_vap, state1]
 s_cycle = [st.entropy / 1000 for st in cycle_states]
 T_cycle = [st.temperature for st in cycle_states]
 plt.plot(s_cycle, T_cycle, 'b-o', linewidth=2, label='ORC Cycle')
-labels = ['1', '2', "2'", '3', '4', '5']
-offsets = [(-15, -15), (-15, 10), (-15, 10), (0, 10), (10, 10), (10, -15)]
+labels = ['1', '2', "2'", '', '3', '4', '5', '']
+offsets = [(-15, -15), (-15, 10), (-15, 10), (5, 5), (0, 10), (10, 10), (10, -15), (5, -10)]
 
 for i, txt in enumerate(labels):
     plt.annotate(txt, (s_cycle[i], T_cycle[i]), xytext=offsets[i], 
