@@ -188,12 +188,16 @@ print(f"Altezza del canale di flusso (b): {b:.10f} m")
 
 # Parametri di visualizzazione
 scale = 1.0
-y1, y2 = 50, 150  # Offset verticale per separare i due stadi
+y0, y01, y1, y2 =-55, 45, 50, 150  # Offset verticale per separare i due stadi
 offset = 5       # Distanza del testo dalla punta/centro
 
 plt.figure(figsize=(10, 8))
 
-# --- STADIO 1 (Ingresso) ---
+# --- STADIO 0 (Ingresso statore) ---
+plt.arrow(-100, y0, 0, 2, head_width=2, head_length=4, fc='blue', ec='blue')
+plt.text(-100, y0 + 2 + offset, r"$\vec{c}_0 \approx 0$", color='blue', fontsize=12, ha='center')
+
+# --- STADIO 1 (Ingresso rotore/uscita statore) ---
 # c1
 plt.arrow(0, y1, c1_t*scale, c1_a*scale, head_width=2, head_length=4, fc='blue', ec='blue')
 plt.text(c1_t*scale/2, y1 + c1_a*scale/2 + offset, r"$\vec{c}_1$", color='blue', fontsize=12, ha='center')
@@ -208,7 +212,7 @@ plt.arrow(w1_t*scale, y1 + w1_a*scale, (c1_t-w1_t)*scale, 0, head_width=2, head_
 plt.text((w1_t + c1_t)*scale/2, y1 + w1_a*scale + offset, r"$\vec{u}$", color='red', fontsize=12, ha='center')
 
 
-# --- STADIO 2 (Uscita) ---
+# --- STADIO 2 (Uscita rotore) ---
 # c2
 plt.arrow(0, y2, c2_t*scale, c2_a*scale, head_width=2, head_length=4, fc='blue', ec='blue')
 plt.text(c2_t*scale/2 + offset, y2 + c2_a*scale/2, r"$\vec{c}_2$", color='blue', fontsize=12)
@@ -228,6 +232,14 @@ plt.text(100, y1, " Ingresso Rotore", va='center', fontsize=10, color='gray', fo
 # Linea Uscita Rotore (corrispondente a y_out)
 plt.hlines(y=y2, xmin=-100, xmax=100, colors='gray', linestyles='--', linewidth=1, alpha=0.7)
 plt.text(100, y2, " Uscita Rotore", va='center', fontsize=10, color='gray', fontstyle='italic')
+
+#Linea Ingresso Statore
+plt.hlines(y=y0, xmin=-100, xmax=100, colors='gray', linestyles='--', linewidth=1, alpha=0.7)
+plt.text(100, y0, " Ingresso Statore", va='center', fontsize=10, color='gray', fontstyle='italic')
+
+#Linea Uscita Statore
+plt.hlines(y=y01, xmin=-100, xmax=100, colors='gray', linestyles='--', linewidth=1, alpha=0.7)
+plt.text(100, y01, " Uscita Statore", va='center', fontsize=10, color='gray', fontstyle='italic')
 
 # -------------------------------------------------
 # LINEA MEDIA DELLA PALA DEL ROTORE (Bezier cubica)
@@ -257,10 +269,42 @@ B = ((1 - t)**3)[:, None] * P0 \
   + (t**3)[:, None] * P3
 
 # Plot linea media
-plt.plot(B[:, 0], B[:, 1], 'k', linewidth=1, linestyle='--', label="Linea media pala")
+plt.plot(B[:, 0], B[:, 1], 'k', linewidth=1, linestyle='--', label="Linea media rotore")
+
+# DA SISTEMARE PLOT LINEA STATORE
+
+# -------------------------------------------------
+# LINEA MEDIA DELLA PALA DELO STATORE (Bezier cubica)
+# -------------------------------------------------
+
+# Lunghezza "virtuale" della pala nel piano t–a
+LL = 0.8 * (y01 - y0)
+
+# Versori delle velocità relative
+e_c0 = np.array([0, 2]) / np.sqrt(2**2)
+e_w1 = np.array([w1_t, w1_a]) / np.sqrt(w1_t**2 + w1_a**2)
+
+# Punti di controllo Bezier
+P0 = np.array([-100, y0])                 # bordo d'attacco
+P3 = np.array([0.0, y01])                 # bordo d'uscita
+
+P1 = P0 + LL * e_c0                       # direzione c0
+P2 = P3 - LL * e_w1                       # direzione w1 (tangente in uscita)
+
+# Parametro curva
+tt = np.linspace(0, 1, 200)
+
+# Bezier cubica
+BB = ((1 - tt)**3)[:, None] * P0 \
+  + (3 * (1 - tt)**2 * tt)[:, None] * P1 \
+  + (3 * (1 - tt) * tt**2)[:, None] * P2 \
+  + (tt**3)[:, None] * P3
+
+# Plot linea media
+plt.plot(BB[:, 0], BB[:, 1], 'k', linewidth=1, linestyle='--', label="Linea media statore")
 
 # Evidenzia bordo d'attacco e uscita
-#plt.scatter([P0[0], P3[0]], [P0[1], P3[1]], color='k', zorder=2)
+# plt.scatter([PP1[0], PP0[0]], [PP1[1], PP0[1]], color='k', zorder=2)
 
 plt.legend()
 
