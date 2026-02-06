@@ -226,19 +226,19 @@ plt.arrow(w2_t*scale, y2 + w2_a*scale, (c2_t-w2_t)*scale, 0, head_width=2, head_
 plt.text((w2_t + c2_t)*scale/2, y2 + w2_a*scale - offset*2, r"$\vec{u}$", color='red', fontsize=12, ha='center')
 
 # Linea Ingresso Rotore (corrispondente a y_in)
-plt.hlines(y=y1, xmin=-100, xmax=100, colors='gray', linestyles='--', linewidth=1, alpha=0.7)
+plt.hlines(y=y1, xmin=-150, xmax=100, colors='gray', linestyles='--', linewidth=1, alpha=0.7)
 plt.text(100, y1, " Ingresso Rotore", va='center', fontsize=10, color='gray', fontstyle='italic')
 
 # Linea Uscita Rotore (corrispondente a y_out)
-plt.hlines(y=y2, xmin=-100, xmax=100, colors='gray', linestyles='--', linewidth=1, alpha=0.7)
+plt.hlines(y=y2, xmin=-150, xmax=100, colors='gray', linestyles='--', linewidth=1, alpha=0.7)
 plt.text(100, y2, " Uscita Rotore", va='center', fontsize=10, color='gray', fontstyle='italic')
 
 #Linea Ingresso Statore
-plt.hlines(y=y0, xmin=-100, xmax=100, colors='gray', linestyles='--', linewidth=1, alpha=0.7)
+plt.hlines(y=y0, xmin=-150, xmax=100, colors='gray', linestyles='--', linewidth=1, alpha=0.7)
 plt.text(100, y0, " Ingresso Statore", va='center', fontsize=10, color='gray', fontstyle='italic')
 
 #Linea Uscita Statore
-plt.hlines(y=y01, xmin=-100, xmax=100, colors='gray', linestyles='--', linewidth=1, alpha=0.7)
+plt.hlines(y=y01, xmin=-150, xmax=100, colors='gray', linestyles='--', linewidth=1, alpha=0.7)
 plt.text(100, y01, " Uscita Statore", va='center', fontsize=10, color='gray', fontstyle='italic')
 
 # -------------------------------------------------
