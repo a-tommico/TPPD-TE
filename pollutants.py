@@ -25,7 +25,7 @@ mass_tot = mass_secco + mass_umido + mass_fanghi
 LHV_dry = 19.04e6
 
 # Range equivalence ratio
-phi_list = np.linspace(0.5, 1.2, 100)
+phi_list = np.linspace(0.3, 1.2, 100)
 
 # Condizioni ambiente
 Tamb = 298.15
