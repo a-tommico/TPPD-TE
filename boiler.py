@@ -1,53 +1,35 @@
-import cantera as ct
-import numpy as np
-import matplotlib.pyplot as plt
 from pyfluids import Fluid, FluidsList, Input
+import matplotlib.pyplot as plt
+import numpy as np
+import cantera as ct
 
-# --- 1. System Setup ---
-fluid_name = FluidsList.MDM
-fluid = Fluid(fluid_name)
-mass_flow_rate = 2.0  # kg/s
+fluid = Fluid(FluidsList.MDM)
+mass_flow_rate = 2.11
+T_cond = 100
+T_evap = 270
+pump_eff = 0.70
+turb_eff = 0.85
 
-# --- 2. Cycle Calculation ---
-
-# State 1 (Pump Inlet): Saturated liquid at T = 95°C
-T_cond = 95
+# State 1 (Pump Inlet): Saturated liquid
 state1 = fluid.with_state(Input.temperature(T_cond), Input.quality(0))
 p_cond = state1.pressure
 
-# State 2 (Pump Outlet): Compressed to P = 10 bar
-p_high = 10e5  # 10 bar
-pump_eff = 0.70
+# State 2 (Pump Outlet): Compressed to P_evap
+p_evap = fluid.with_state(Input.temperature(T_evap), Input.quality(100)).pressure
+state2 = state1.compression_to_pressure(p_evap, pump_eff*100)
+w_pump = state2.enthalpy - state1.enthalpy
 
-# Isentropic step
-state2_isen = state1.isentropic_compression_to_pressure(p_high)
-h2_isen = state2_isen.enthalpy
-# Actual step
-w_pump_ideal = h2_isen - state1.enthalpy
-w_pump_actual = w_pump_ideal / pump_eff
-h2 = state1.enthalpy + w_pump_actual
-state2 = fluid.with_state(Input.pressure(p_high), Input.enthalpy(h2))
-
-# State 2'': Saturated Liquid at P = 10 bar
-state2_second = fluid.with_state(Input.pressure(p_high), Input.quality(0))
-
-# State 3 (Turbine Inlet): Saturated Vapor at P = 10 bar
-state3 = fluid.with_state(Input.pressure(p_high), Input.quality(100))
+# State 3 (Turbine Inlet): Saturated Vapor
+state3 = fluid.with_state(Input.pressure(p_evap), Input.quality(100))
 
 # State 4 (Turbine Outlet): Expansion to P_cond
-turb_eff = 0.85
-state4_isen = state3.isentropic_expansion_to_pressure(p_cond)
-h4_isen = state4_isen.enthalpy
-w_turb_ideal = state3.enthalpy - h4_isen
-w_turb_actual = w_turb_ideal * turb_eff
-h4 = state3.enthalpy - w_turb_actual
-state4 = fluid.with_state(Input.pressure(p_cond), Input.enthalpy(h4))
+state4 = state3.expansion_to_pressure(p_cond, turb_eff*100)
+w_turb = state3.enthalpy - state4.enthalpy
 
-# --- 3. Regenerator Logic ---
+# Regenerator Logic
 effectiveness = 0.80
 cp_hot = state4.specific_heat
 cp_cold = state2.specific_heat
-
 C_hot = mass_flow_rate * cp_hot
 C_cold = mass_flow_rate * cp_cold
 C_min = min(C_hot, C_cold)
@@ -59,16 +41,15 @@ h5 = state4.enthalpy - (Q_regen / mass_flow_rate)
 state5 = fluid.with_state(Input.pressure(p_cond), Input.enthalpy(h5))
 
 h2_prime = state2.enthalpy + (Q_regen / mass_flow_rate)
-state2_prime = fluid.with_state(Input.pressure(p_high), Input.enthalpy(h2_prime))
+state2_prime = fluid.with_state(Input.pressure(p_evap), Input.enthalpy(h2_prime))
 
-# --- 4. Performance Metrics ---
+# Performance Metrics
 W_turb = mass_flow_rate * (state3.enthalpy - state4.enthalpy)
 W_pump = mass_flow_rate * (state2.enthalpy - state1.enthalpy)
 W_net = W_turb - W_pump
 Q_in = mass_flow_rate * (state3.enthalpy - state2_prime.enthalpy)
 Q_out = mass_flow_rate * (state5.enthalpy - state1.enthalpy)
 efficiency = (W_net / Q_in) * 100 if Q_in > 0 else 0
-
 # ---------------------
 # BOILER SIZING
 # ---------------------
@@ -144,10 +125,16 @@ m_yearly = m_dot_fuel * 3600 * 24 * 365 # kg/year
 m_dot = m_tot / (365*24*3600) # kg/s
 Q_th = m_dot * LHV_mean # W
 
+# Mass flow rate to be used
+
+m_dot_MDM = Q_th*eta_boiler / (state3.enthalpy - state2_prime.enthalpy)
+
 print(f"Q_ORC: {Q_ORC/1e3:.2f} kW")
 print(f"Q_th: {Q_th/1e3:.2f} kW")
 print(f"Q_ORC_theoretical: {Q_th*eta_boiler/1e3:.2f} kW")
 print(f"LHV_mean: {LHV_mean/1e6:.2f} MJ/kg")
 print(f"yearly fuel consumption: {m_yearly/1e3:.2f} tons/year")
 print(f"available fuel mass: {m_tot/1e3:.2f} tons")
+print(f"Fuel leftover per year: {(m_tot - m_yearly)/1e3:.2f} tons")
+print(f"Mass flow rate of working fluid for ORC: {m_dot_MDM:.4f} kg/s")
 

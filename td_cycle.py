@@ -3,7 +3,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 fluid = Fluid(FluidsList.MDM)
-mass_flow_rate = 3.0
+mass_flow_rate = 2.11
 T_cond = 100
 T_evap = 270
 pump_eff = 0.70

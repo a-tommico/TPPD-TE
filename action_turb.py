@@ -5,7 +5,7 @@ import numpy as np
 # --- 1. System Setup ---
 fluid_name = FluidsList.MDM
 fluid = Fluid(fluid_name)
-mass_flow_rate = 2.0  # kg/s
+mass_flow_rate = 2.11  # kg/s
 
 # --- 2. Cycle Calculation ---
 
