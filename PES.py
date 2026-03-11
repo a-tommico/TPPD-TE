@@ -90,9 +90,11 @@ eta_th_ORC = P_th_ORC / Q_in_fuel
 print(f"Electrical Efficiency of ORC: {eta_el_ORC*100:.2f} %")
 print(f"Thermal Efficiency of ORC: {eta_th_ORC*100:.2f} %")
 
-PES = 1 - 1 / (eta_el_ORC / eta_el_rif + eta_th_ORC / eta_th_rif)
+PES_ref = 1 - 1 / (eta_el_ORC / eta_el_rif + eta_th_ORC / eta_th_rif)
+PES_best = 1 - 1 / (eta_el_ORC / eta_el_best + eta_th_ORC / eta_th_best)
 
-print(f"Primary Energy Saving (PES) of ORC: {PES*100:.2f} %")
+print(f"Primary Energy Saving (PES) of ORC: {PES_ref*100:.2f} %")
+print(f"Primary Energy Saving (PES) of ORC vs Best: {PES_best*100:.2f} %")
 
 # retta di riferimento
 x_ref = np.linspace(0, eta_el_rif, 100)
@@ -102,15 +104,21 @@ y_ref = eta_th_rif * (1 - x_ref/eta_el_rif)
 x_best = np.linspace(0, eta_el_best, 100)
 y_best = eta_th_best * (1 - x_best/eta_el_best)
 
+# retta eta_tot = 1
+x_1 = np.linspace(0, 1, 100)
+y_1 = 1 - x_1
+
 plt.figure(figsize=(6,6))
 
 # rette
 plt.plot(x_ref, y_ref, label='Reference PES = 0')
 plt.plot(x_best, y_best, color='green', label='Best technology')
+plt.plot(x_1, y_1, color='black', linestyle='--', label='eta_tot = 1')
 
 # punto ORC
-plt.scatter(eta_el_ORC, eta_th_ORC, color='black', label='ORC')
-
+plt.scatter(eta_el_ORC, eta_th_ORC, color='red', label='ORC')
+plt.hlines(eta_th_ORC, 0, eta_el_ORC, color='red', linestyle='--')
+plt.vlines(eta_el_ORC, 0, eta_th_ORC, color='red', linestyle='--')
 
 plt.xlabel(r'Electrical efficiency $\eta_{el}$')
 plt.ylabel(r'Thermal efficiency $\eta_{th}$')
