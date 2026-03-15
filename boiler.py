@@ -50,6 +50,7 @@ W_net = W_turb - W_pump
 Q_in = mass_flow_rate * (state3.enthalpy - state2_prime.enthalpy)
 Q_out = mass_flow_rate * (state5.enthalpy - state1.enthalpy)
 efficiency = (W_net / Q_in) * 100 if Q_in > 0 else 0
+
 # ---------------------
 # BOILER SIZING
 # ---------------------
