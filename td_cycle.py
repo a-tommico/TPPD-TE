@@ -48,10 +48,13 @@ def calculate_cycle(fluid_name=FLUID_NAME, T_cond=T_COND, T_evap=T_EVAP, mass_fl
 
     return {
         'states': {'1': state1, '2': state2, "2'": state2_prime, '3': state3, '4': state4, '5': state5},
+        'W_turb': W_turb,
+        'W_pump': W_pump,
         'W_net': W_net,
-        'efficiency': efficiency,
         'Q_in': Q_in,
         'Q_out': Q_out,
+        'Q_regen': Q_regen,
+        'efficiency': efficiency,
         'fluid': fluid,
         'p_cond': p_cond,
         'p_evap': p_evap
@@ -95,11 +98,14 @@ def plot_cycle(results):
     plt.plot(s_liq, T_range[:len(s_liq)], 'k-')
     plt.plot(s_vap, T_range[:len(s_vap)], 'k--')
     plt.plot(s_cycle, T_cycle, 'b-o', label='ORC Cycle')
-    
-    # Annotations
-    labels = ['1', '2', "2'", '', '3', '4', '5', '']
-    for i, txt in enumerate(labels):
-        if txt: plt.annotate(txt, (s_cycle[i], T_cycle[i]), textcoords="offset points", xytext=(5,5))
+
+    # per-point offsets to avoid overlap with curve and each other
+    ts_offsets = {'1': (-18, -12), '2': (5, -12), "2'": (5, 5), '3': (5, 5), '4': (5, -12), '5': (-18, 5)}
+    for key, st in states_dict.items():
+        ox, oy = ts_offsets[key]
+        plt.annotate(key, (st.entropy/1000, st.temperature),
+                     textcoords="offset points", xytext=(ox, oy), fontsize=9,
+                     arrowprops=dict(arrowstyle="-", color='gray', lw=0.8))
 
     plt.xlabel('Entropy (kJ/kg·K)')
     plt.ylabel('Temperature (°C)')
@@ -118,7 +124,14 @@ def plot_cycle(results):
     plt.plot(h_liq, [fluid.with_state(Input.temperature(T), Input.quality(0)).pressure/1e5 for T in T_range[:len(h_liq)]], 'k-')
     plt.plot(h_vap, [fluid.with_state(Input.temperature(T), Input.quality(100)).pressure/1e5 for T in T_range[:len(h_vap)]], 'k--')
     plt.plot(h_cycle, p_cycle, 'r-o', label='ORC Cycle')
-    
+
+    ph_offsets = {'1': (-18, -12), '2': (5, 5), "2'": (5, 5), '3': (5, 5), '4': (5, -12), '5': (-18, -12)}
+    for key, st in states_dict.items():
+        ox, oy = ph_offsets[key]
+        plt.annotate(key, (st.enthalpy/1000, st.pressure/1e5),
+                     textcoords="offset points", xytext=(ox, oy), fontsize=9,
+                     arrowprops=dict(arrowstyle="-", color='gray', lw=0.8))
+
     plt.yscale('log')
     plt.xlabel('Enthalpy (kJ/kg)')
     plt.ylabel('Pressure (bar)')
@@ -130,5 +143,37 @@ def plot_cycle(results):
 
 if __name__ == "__main__":
     res = calculate_cycle()
-    print(f"Efficiency: {res['efficiency']:.2f}%")
+    st = res['states']
+
+    print("=" * 55)
+    print(f"{'STATE TABLE':^55}")
+    print("=" * 55)
+    print(f"{'State':<8} {'T (°C)':<10} {'P (bar)':<10} {'h (kJ/kg)':<12} {'s (kJ/kgK)':<12}")
+    print("-" * 55)
+    for name, s in st.items():
+        print(f"{name:<8} {s.temperature:<10.2f} {s.pressure/1e5:<10.3f} {s.enthalpy/1e3:<12.2f} {s.entropy/1e3:<12.4f}")
+
+    print("=" * 55)
+    print(f"{'COMPONENT  Δh  (kJ/kg)':<55}")
+    print("-" * 55)
+    print(f"  Pump       Δh = {(st['2'].enthalpy  - st['1'].enthalpy)/1e3:+.2f} kJ/kg")
+    print(f"  Regen (c)  Δh = {(st['2\''].enthalpy - st['2'].enthalpy)/1e3:+.2f} kJ/kg")
+    print(f"  Evaporator Δh = {(st['3'].enthalpy  - st['2\''].enthalpy)/1e3:+.2f} kJ/kg")
+    print(f"  Turbine    Δh = {(st['3'].enthalpy  - st['4'].enthalpy)/1e3:+.2f} kJ/kg")
+    print(f"  Regen (h)  Δh = {(st['4'].enthalpy  - st['5'].enthalpy)/1e3:+.2f} kJ/kg")
+    print(f"  Condenser  Δh = {(st['5'].enthalpy  - st['1'].enthalpy)/1e3:+.2f} kJ/kg")
+
+    print("=" * 55)
+    print(f"{'POWER & HEAT  (kW)':<55}")
+    print("-" * 55)
+    print(f"  W_turb  = {res['W_turb']/1e3:.2f} kW")
+    print(f"  W_pump  = {res['W_pump']/1e3:.2f} kW")
+    print(f"  W_net   = {res['W_net']/1e3:.2f} kW")
+    print(f"  Q_in    = {res['Q_in']/1e3:.2f} kW")
+    print(f"  Q_regen = {res['Q_regen']/1e3:.2f} kW")
+    print(f"  Q_out   = {res['Q_out']/1e3:.2f} kW")
+    print(f"  P ratio = {res['p_evap']/res['p_cond']:.2f}")
+    print(f"  η_cycle = {res['efficiency']:.2f} %")
+    print("=" * 55)
+
     plot_cycle(res)

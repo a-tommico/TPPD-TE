@@ -21,7 +21,16 @@ T_OIL_SUPPLY = 310.0 # °C
 T_OIL_RETURN = 280.0 # °C
 CP_OIL = 2.48e3      # J/kgK (Generic thermal oil)
 
-# --- 5. Boiler & Flue Gas Parameters ---
+# --- 5. Heat Exchanger Pinch Points ---
+PINCH_EVAP  = 30.0  # K  minimum ΔT at evaporator bubble-point  (oil – MDM sat-liq)
+PINCH_COND  = 10.0  # K  minimum ΔT at condenser dew-point      (MDM sat-vap – water)
+PINCH_REGEN = 10.0  # K  minimum approach temperature in regenerator
+
+# --- 6. Condenser Water Circuit ---
+T_W_IN  = 60.0   # °C  cooling water supply temperature
+T_W_OUT = 90.0   # °C  = T_COND - PINCH_COND  (100 - 10 = 90)
+
+# --- 7. Boiler & Flue Gas Parameters ---
 T_AMB = 25.0         # °C
 T_STACK_TARGET = 150.0 # °C
 CP_FLUE = 1.1e3      # J/kgK
@@ -40,6 +49,7 @@ M_TOT = M_DRY + M_WETDRIED + M_SLUDGEDRIED
 LHV_DRY_REF = 19.01e6
 LHV_WET_REF = 19.15e6
 LHV_SLUDGE_REF = 18.72e6
+LHV_MEAN = 17.09e6  # J/kg  effective mixed-fuel LHV (moisture-corrected, weighted average)
 
 H_EVAP = 2.26e6 # J/kg (Water enthalpy of vaporization)
 
