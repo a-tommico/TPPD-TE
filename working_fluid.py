@@ -1,3 +1,23 @@
+'''
+## Heat Exchanger Sizing: Open-Access Literature Validation
+Pinch Point Temperature Differences (PPTD) and effectiveness values are optimized to balance thermodynamic efficiency (OPEX) and heat exchanger surface area (CAPEX), supported by leading European research.
+
+### 🛢️ Evaporator (Oil to MDM)
+* **Design Value:** PPTD = 30 K (Max $T_{evap}$ = 280°C).
+* **Literature Baseline:** Primary heat exchangers using sensible heat sources require wider pinch points (15-30K) to offset lower heat transfer coefficients and contain equipment costs.
+* **Source:** *Low-Temperature ORC Systems: Influence of the Approach Point and Pinch Point Temperature Differences*, MDPI Energies (Open Access).
+
+### ♻️ Regenerator (Vapor to Liquid)
+* **Design Value:** Effectiveness ($\epsilon$) = 80%.
+* **Literature Baseline:** Gas-to-liquid heat transfer presents the lowest $U$-value in the system. Techno-economic surveys dictate that pushing $\epsilon > 80-85\%$ doubles the plate area, destroying the Specific Investment Cost ($/kW) for negligible power gains.
+* **Source:** *Quoilin et al. (2013), Techno-economic survey of Organic Rankine Cycle (ORC) systems*, University of Liège (Open Access via ORBi/ResearchGate).
+
+### 💧 Condenser (MDM to Water)
+* **Design Value:** PPTD = 10 K.
+* **Literature Baseline:** Phase-change condensation against liquid water allows for high global heat transfer coefficients. Thermo-economic optimizations consistently cap condenser pinch points between 5 K and 10 K to maximize cycle expansion without breaking the budget.
+* **Source:** *Markides et al. (2020), Thermo-Economic Optimization of ORC Systems*, Imperial College London, Frontiers in Energy Research (Open Access).
+'''
+
 from pyfluids import Fluid, FluidsList, Input
 import pandas as pd
 
